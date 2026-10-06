@@ -204,7 +204,7 @@ a { color: inherit; }
   display: grid; grid-template-columns: 1fr 360px; gap: 0;
   background: var(--card); border-radius: 26px; overflow: hidden; box-shadow: var(--shadow);
 }
-.leaflet-map { height: 600px; background: #cfe9f2; z-index: 1; }
+.leaflet-map { height: auto; min-height: 600px; background: #cfe9f2; z-index: 1; }
 .player {
   padding: 22px; display: flex; flex-direction: column; gap: 18px;
   background: linear-gradient(180deg, var(--ocean-800), var(--ocean-900));
@@ -217,8 +217,9 @@ a { color: inherit; }
 .clock small { font-size: 1rem; font-weight: 400; opacity: .7; }
 .clock-icon { font-size: 2rem; }
 .now-photo { border-radius: 18px; overflow: hidden; aspect-ratio: 16 / 9; background: rgba(255,255,255,.08); }
-.now-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .25s, transform .6s; }
-.now-photo img.fade { opacity: 0; transform: scale(1.04); }
+.now-photo img, .now-photo video { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .25s, transform .6s; }
+.now-photo [hidden] { display: none; }
+.now-photo.fade img, .now-photo.fade video { opacity: 0; transform: scale(1.04); }
 .pop { display: grid; gap: 4px; font-family: "Sarabun", sans-serif; }
 .pop img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; margin-bottom: 4px; }
 .pop b { font-family: "Kanit", sans-serif; font-size: 1rem; color: var(--ocean-800); }
@@ -317,8 +318,8 @@ a { color: inherit; }
 }
 .chip.live { background: var(--coral); color: #fff; animation: pulse 1.6s infinite; }
 .tl-photo { margin: -18px -20px 14px; height: 130px; border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; }
-.tl-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s; }
-.tl-card:hover .tl-photo img { transform: scale(1.05); }
+.tl-photo img, .tl-photo video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s; }
+.tl-card:hover .tl-photo img, .tl-card:hover .tl-photo video { transform: scale(1.05); }
 .tl-card h3 { margin: 0 0 6px; font-size: 1.15rem; }
 .tl-place { color: var(--muted); font-size: .95rem; }
 .tl-hint { margin-top: 8px; font-size: .82rem; color: var(--ocean-500); opacity: 0; transition: opacity .25s; }
@@ -338,8 +339,12 @@ a { color: inherit; }
   content: ""; z-index: 1; position: absolute; left: -10%; right: -10%; bottom: -30px; height: 60px;
   background: var(--card); border-radius: 50%;
 }
-.place-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
-.place:hover .place-art img { transform: scale(1.06); }
+.place-art img, .place-art video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
+.place:hover .place-art img, .place:hover .place-art video { transform: scale(1.06); }
+.place-art .badge {
+  position: absolute; top: 12px; right: 12px; z-index: 2; padding: 4px 10px; border-radius: 999px;
+  font-size: .78rem; font-weight: 600; color: #fff; background: rgba(4,33,59,.6); backdrop-filter: blur(6px);
+}
 .place-art .emoji {
   position: absolute; left: 16px; bottom: 26px; width: 54px; height: 54px; border-radius: 16px;
   display: grid; place-items: center; font-size: 1.8rem; background: #fff; box-shadow: var(--shadow); animation: floaty 3s ease-in-out infinite alternate; z-index: 1; }
@@ -381,7 +386,7 @@ a { color: inherit; }
 /* ===== Responsive ===== */
 @media (max-width: 900px) {
   .map-wrap { grid-template-columns: 1fr; }
-  .leaflet-map { height: 420px; }
+  .leaflet-map { height: 420px; min-height: 0; }
   .clock { font-size: 2.6rem; }
 }
 @media (max-width: 720px) {

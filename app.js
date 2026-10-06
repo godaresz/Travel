@@ -16,7 +16,8 @@ const PLACES = {
     art: "linear-gradient(135deg,#ff9f6e,#ff4f7b)",
   },
   aquarium: {
-    image: "images/aquarium.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/aquarium.jpg"
+    image: "images/aquarium.jpg", // ภาพนิ่ง (ใช้เป็น poster ของวิดีโอด้วย)
+    video: "images/aquarium.mp4", // วิดีโอจริงจากอควอเลี่ยม
     name: "อควอเลี่ยม บางแสน",
     desc: "สถานแสดงพันธุ์สัตว์น้ำบางแสน สถาบันวิทยาศาสตร์ทางทะเล ม.บูรพา",
     icon: "🐠",
@@ -87,6 +88,10 @@ const SCHEDULE = [
 // สถานที่ที่ใช้แสดงภาพของแต่ละกิจกรรม
 ["ldc", "ldc", "aquarium", "aquarium", "beach", "beach", "roseta", "roseta", "ldc"].forEach((k, i) => (SCHEDULE[i].pl = k));
 const imgOf = (key) => PLACES[key].image;
+// แสดงวิดีโอถ้าสถานที่นั้นมี ไม่งั้นแสดงรูป
+const mediaHTML = (p) => p.video
+  ? `<video src="${p.video}" poster="${p.image}" autoplay muted loop playsinline preload="metadata" aria-label="${p.name}"></video>`
+  : `<img src="${p.image}" alt="${p.name}" loading="lazy" />`;
 
 // ระยะเวลาแอนิเมชันของแต่ละประเภท (ms)
 const ANIM_MS = { stay: 2600, shortStay: 1400, drive: 8000, walk: 3800 };
@@ -189,7 +194,7 @@ function renderTimeline(onPick) {
     <li class="tl-item reveal" data-i="${i}" style="transition-delay:${(i % 3) * 60}ms">
       <div class="tl-dot">${s.icon}</div>
       <div class="tl-card" tabindex="0" role="button" aria-label="ดู ${s.title} บนแผนที่">
-        <div class="tl-photo"><img src="${imgOf(s.pl)}" alt="${PLACES[s.pl].name}" loading="lazy" /></div>
+        <div class="tl-photo">${s.type === "stay" && s.t1 > s.t0 ? mediaHTML(PLACES[s.pl]) : `<img src="${imgOf(s.pl)}" alt="${PLACES[s.pl].name}" loading="lazy" />`}</div>
         <div class="tl-time">
           <b>${s.time}</b>
           ${s.dur ? `<span class="chip">⏱ ${s.dur}</span>` : ""}
@@ -211,8 +216,9 @@ function renderPlaces(onPick) {
   $("#places-list").innerHTML = Object.entries(PLACES).map(([key, p]) => `
     <article class="place reveal">
       <div class="place-art" style="background:${p.art}">
-        <img src="${p.image}" alt="${p.name}" loading="lazy" />
+        ${mediaHTML(p)}
         <span class="emoji">${p.icon}</span>
+        ${p.video ? '<span class="badge">🎬 วิดีโอจริง</span>' : ""}
       </div>
       <div class="place-body">
         <h3>${p.name}</h3>
@@ -450,17 +456,37 @@ class TripPlayer {
     }
   }
 
+  // ภาพ/วิดีโอในแผงผู้เล่น (ค่อย ๆ จางเปลี่ยน)
+  showMedia(p) {
+    const box = $(".now-photo");
+    const photo = $("#now-photo");
+    const video = $("#now-video");
+    const want = p.video || p.image;
+    if (box.dataset.src === want) return;
+    box.dataset.src = want;
+    box.classList.add("fade");
+    clearTimeout(this.mediaT);
+    this.mediaT = setTimeout(() => {
+      if (p.video) {
+        video.poster = p.image;
+        video.src = p.video;
+        video.hidden = false; photo.hidden = true;
+        video.play().catch(() => {});
+      } else {
+        video.pause(); video.removeAttribute("src"); video.load();
+        video.hidden = true; photo.hidden = false;
+        photo.src = p.image; photo.alt = p.name;
+      }
+      box.classList.remove("fade");
+    }, 250);
+  }
+
   onScene(sc, instant) {
     this.camera(sc, instant);
     const card = $("#now-card");
     card.classList.remove("swap"); void card.offsetWidth; card.classList.add("swap");
     $("#now-icon").textContent = sc.icon;
-    const photo = $("#now-photo");
-    const src = imgOf(sc.pl);
-    if (!photo.src.endsWith(src)) {
-      photo.classList.add("fade");
-      setTimeout(() => { photo.src = src; photo.alt = PLACES[sc.pl].name; photo.classList.remove("fade"); }, 250);
-    }
+    this.showMedia(PLACES[sc.pl]);
     $("#now-time").textContent = `${sc.time}${sc.dur ? " · " + sc.dur : ""}`;
     $("#now-title").textContent = sc.title;
     $("#now-place").textContent = `📍 ${sc.place}`;
