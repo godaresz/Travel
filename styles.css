@@ -204,7 +204,7 @@ a { color: inherit; }
   display: grid; grid-template-columns: 1fr 360px; gap: 0;
   background: var(--card); border-radius: 26px; overflow: hidden; box-shadow: var(--shadow);
 }
-.leaflet-map { height: auto; min-height: 600px; background: #cfe9f2; z-index: 1; }
+.leaflet-map { height: auto; min-height: 600px; touch-action: pan-y; background: #cfe9f2; z-index: 1; }
 .player {
   padding: 22px; display: flex; flex-direction: column; gap: 18px;
   background: linear-gradient(180deg, var(--ocean-800), var(--ocean-900));
@@ -389,6 +389,16 @@ a { color: inherit; }
 .tl-item.reveal.in { transform: none; }
 
 /* ===== Responsive ===== */
+/* ปุ่มเปิด/ปิดเสียงวิดีโอ */
+.tl-photo { position: relative; }
+.mute-btn {
+  position: absolute; z-index: 3; top: 10px; left: 10px; width: 38px; height: 38px; border: 0; border-radius: 50%;
+  display: grid; place-items: center; font-size: 1.05rem; cursor: pointer;
+  background: rgba(4,33,59,.6); color: #fff; backdrop-filter: blur(6px); transition: transform .2s;
+}
+.mute-btn:hover { transform: scale(1.1); }
+.mute-btn[hidden] { display: none; }
+
 @media (max-width: 900px) {
   .map-wrap { grid-template-columns: 1fr; }
   .leaflet-map { height: 420px; min-height: 0; }
@@ -396,6 +406,23 @@ a { color: inherit; }
 }
 @media (max-width: 720px) {
   .nav-links { display: none; }
+  .section { padding-top: 56px; }
+  .section-head { margin-bottom: 22px; }
+  .map-wrap { border-radius: 22px; }
+  .leaflet-map { height: 52vh; max-height: 380px; min-height: 300px; }
+  .player { padding: 16px; gap: 14px; }
+  .clock { font-size: 2.3rem; }
+  .clock-icon { font-size: 1.5rem; }
+  .now-card { padding: 12px; min-height: 0; }
+  .now-icon { width: 44px; height: 44px; font-size: 1.4rem; }
+  .now-title { font-size: 1.05rem; }
+  .steps button { width: 30px; height: 30px; }
+  .controls .btn.icon { width: 48px; height: 48px; }
+  .place-art { height: auto; aspect-ratio: 16 / 10; }
+  .place.has-video .place-art { aspect-ratio: 4 / 5; }
+  .tl-photo { height: 160px; }
+  .stat b { font-size: 1.8rem; }
+  .checklist span { padding: 8px 14px; font-size: .92rem; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .timeline::before { left: 22px; }
   .tl-item, .tl-item:nth-child(even) { width: 100%; margin-left: 0; padding: 0 0 26px 62px; }

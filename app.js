@@ -27,7 +27,7 @@ const PLACES = {
   },
   beach: {
     image: "images/beach.jpg",
-    video: "images/beach.mp4", // ตัดจากคลิป TikTok @chonburilove
+    video: "images/beach.mp4", // คลิปเต็มจาก TikTok @chonburilove
     credit: { label: "@chonburilove", url: "https://www.tiktok.com/@chonburilove/video/7534230236008008978" },
     name: "หาดบางแสน (โซนหน้า รร.S2)",
     desc: "รับข้าวกล่อง พักผ่อน เล่นน้ำ ตามอัธยาศัย",
@@ -38,7 +38,7 @@ const PLACES = {
   },
   roseta: {
     image: "images/rosetta.jpg",
-    video: "images/rosetta.mp4", // ตัดจากคลิป TikTok @uncleprettyplease_
+    video: "images/rosetta.mp4", // คลิปเต็มจาก TikTok @uncleprettyplease_
     credit: { label: "@uncleprettyplease_", url: "https://www.tiktok.com/@uncleprettyplease_" },
     name: "Rosetta Beach Club",
     desc: "ร้านอาหารริมทะเล ถ.บางแสนล่าง ทานมื้อเย็นร่วมกัน · ร้านอาหารเปิด 11:00–22:00 น. · โทร 098-951-6196",
@@ -93,8 +93,10 @@ const SCHEDULE = [
 ["ldc", "ldc", "aquarium", "aquarium", "beach", "beach", "roseta", "roseta", "ldc"].forEach((k, i) => (SCHEDULE[i].pl = k));
 const imgOf = (key) => PLACES[key].image;
 // แสดงวิดีโอถ้าสถานที่นั้นมี ไม่งั้นแสดงรูป
+// วิดีโอโหลดและเล่นเฉพาะตอนอยู่บนจอ (ประหยัดเน็ตมือถือ) ปิดเสียงเป็นค่าเริ่มต้น กดปุ่ม 🔇 เพื่อเปิดเสียง
 const mediaHTML = (p) => p.video
-  ? `<video src="${p.video}" poster="${p.image}" autoplay muted loop playsinline preload="metadata" aria-label="${p.name}"></video>`
+  ? `<video class="lazy-video" data-src="${p.video}" poster="${p.image}" muted loop playsinline preload="none" aria-label="${p.name}"></video>
+     <button class="mute-btn" type="button" aria-label="เปิดเสียง">🔇</button>`
   : `<img src="${p.image}" alt="${p.name}" loading="lazy" />`;
 
 // ระยะเวลาแอนิเมชันของแต่ละประเภท (ms)
@@ -105,6 +107,42 @@ const CARTO_KEY = "";
 const TRIP_START = new Date("2026-10-24T08:00:00+07:00");
 
 // ---------- Utilities ----------
+const videoIO = new IntersectionObserver((entries) => {
+  entries.forEach(({ target: v, isIntersecting }) => {
+    v.dataset.visible = isIntersecting ? "1" : "";
+    if (isIntersecting) {
+      if (!v.getAttribute("src") && v.dataset.src) v.src = v.dataset.src;
+      if (v.getAttribute("src")) v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
+  });
+}, { threshold: .5 });
+function observeVideos(root = document) {
+  root.querySelectorAll("video.lazy-video").forEach((v) => videoIO.observe(v));
+}
+function setMuteIcon(btn, muted) {
+  btn.textContent = muted ? "🔇" : "🔊";
+  btn.setAttribute("aria-label", muted ? "เปิดเสียง" : "ปิดเสียง");
+}
+// เปิดเสียงได้ทีละคลิป
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".mute-btn");
+  if (!btn) return;
+  e.stopPropagation();
+  e.preventDefault();
+  const v = btn.parentElement.querySelector("video");
+  const unmute = v.muted;
+  document.querySelectorAll("video").forEach((o) => { o.muted = true; });
+  document.querySelectorAll(".mute-btn").forEach((b) => setMuteIcon(b, true));
+  if (unmute) {
+    if (!v.getAttribute("src") && v.dataset.src) v.src = v.dataset.src;
+    v.muted = false;
+    v.play().catch(() => {});
+  }
+  setMuteIcon(btn, !unmute);
+}, true);
+
 const $ = (s, r = document) => r.querySelector(s);
 const pad = (n) => String(n).padStart(2, "0");
 const fmtMin = (m) => `${pad(Math.floor(m / 60))}:${pad(Math.floor(m % 60))}`;
@@ -218,7 +256,7 @@ function renderTimeline(onPick) {
 
 function renderPlaces(onPick) {
   $("#places-list").innerHTML = Object.entries(PLACES).map(([key, p]) => `
-    <article class="place reveal">
+    <article class="place reveal${p.video ? " has-video" : ""}">
       <div class="place-art" style="background:${p.art}">
         ${mediaHTML(p)}
         <span class="emoji">${p.icon}</span>
@@ -244,7 +282,9 @@ function renderPlaces(onPick) {
  * ========================================================= */
 class TripPlayer {
   constructor() {
-    this.map = L.map("leaflet", { zoomControl: true, scrollWheelZoom: false, attributionControl: true })
+    // บนมือถือ ใช้สองนิ้วเลื่อน/ซูมแผนที่ เพื่อให้นิ้วเดียวเลื่อนหน้าเว็บได้ตามปกติ
+    const touch = window.matchMedia("(pointer: coarse)").matches;
+    this.map = L.map("leaflet", { zoomControl: true, scrollWheelZoom: false, attributionControl: true, dragging: !touch, tap: false })
       .setView(PLACES.ldc.latlng, 11);
     const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
     const tiles = CARTO_KEY
@@ -472,14 +512,17 @@ class TripPlayer {
     box.classList.add("fade");
     clearTimeout(this.mediaT);
     this.mediaT = setTimeout(() => {
+      const muteBtn = box.querySelector(".mute-btn");
       if (p.video) {
         video.poster = p.image;
+        video.dataset.src = p.video;
         video.src = p.video;
-        video.hidden = false; photo.hidden = true;
-        video.play().catch(() => {});
+        video.muted = true; setMuteIcon(muteBtn, true);
+        video.hidden = false; photo.hidden = true; muteBtn.hidden = false;
+        if (video.dataset.visible) video.play().catch(() => {});
       } else {
-        video.pause(); video.removeAttribute("src"); video.load();
-        video.hidden = true; photo.hidden = false;
+        video.pause(); delete video.dataset.src; video.removeAttribute("src"); video.load();
+        video.hidden = true; photo.hidden = false; muteBtn.hidden = true;
         photo.src = p.image; photo.alt = p.name;
       }
       box.classList.remove("fade");
@@ -526,5 +569,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   renderTimeline(pick);
   renderPlaces(pick);
+  observeVideos();
   initReveal();
 });
