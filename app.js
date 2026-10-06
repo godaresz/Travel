@@ -112,7 +112,7 @@ const videoIO = new IntersectionObserver((entries) => {
     v.dataset.visible = isIntersecting ? "1" : "";
     if (isIntersecting) {
       if (!v.getAttribute("src") && v.dataset.src) v.src = v.dataset.src;
-      if (v.getAttribute("src")) v.play().catch(() => {});
+      if (v.getAttribute("src") && !v.dataset.hold) v.play().catch(() => {});
     } else {
       v.pause();
     }
@@ -141,6 +141,8 @@ document.addEventListener("click", (e) => {
     v.play().catch(() => {});
   }
   setMuteIcon(btn, !unmute);
+  // จำว่าผู้ใช้เปิดเสียงในแผงแผนที่ไว้ เพื่อให้คลิปสถานที่ถัดไปมีเสียงต่อ
+  $(".now-photo").dataset.sound = unmute && btn.closest(".now-photo") ? "1" : "";
 }, true);
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -318,6 +320,16 @@ class TripPlayer {
     this.playing = false;
     this.pos = 0;
     this.sceneIdx = -1;
+    this.videoBroken = {};
+    this.waitSince = null;
+    this.pendingSeek = null;
+    $("#now-video").addEventListener("loadedmetadata", (e) => {
+      if (this.pendingSeek != null) { e.target.currentTime = this.pendingSeek * e.target.duration; this.pendingSeek = null; }
+    });
+    $("#now-video").addEventListener("error", () => {
+      const sc = this.sceneAt(this.pos);
+      if (this.isVideoScene(sc)) this.videoBroken[sc.pl] = true;
+    });
 
     this.buildScenes();
     this.buildSteps();
@@ -400,6 +412,7 @@ class TripPlayer {
     this.scrub.addEventListener("input", () => {
       this.pause();
       this.render((this.scrub.value / 1000) * this.total, false, true);
+      this.seekVideo(this.pos);
     });
     $("#hero-play").addEventListener("click", () => setTimeout(() => { this.jumpTo(0); this.play(); }, 600));
 
@@ -419,12 +432,15 @@ class TripPlayer {
     if (this.pos >= this.total - 1) this.pos = 0;
     this.playing = true;
     this.btnPlay.textContent = "❚❚ หยุด";
+    delete $("#now-video").dataset.hold;
     this.last = performance.now();
     const loop = (now) => {
       if (!this.playing) return;
       const dt = Math.min(64, now - this.last);
       this.last = now;
-      this.render(Math.min(this.total, this.pos + dt * this.speeds[this.speedIdx]));
+      const sc = this.sceneAt(this.pos);
+      if (this.isVideoScene(sc)) this.stepVideo(sc, now);
+      else this.render(Math.min(this.total, this.pos + dt * this.speeds[this.speedIdx]));
       if (this.pos >= this.total) { this.pause(); this.btnPlay.textContent = "↻ เล่นอีกครั้ง"; return; }
       this.raf = requestAnimationFrame(loop);
     };
@@ -434,12 +450,57 @@ class TripPlayer {
   pause() {
     this.playing = false;
     cancelAnimationFrame(this.raf);
+    const v = $("#now-video");
+    v.dataset.hold = "1";
+    v.pause();
     this.btnPlay.textContent = "▶ เล่น";
+  }
+
+  sceneAt(pos) {
+    const i = this.scenes.findIndex((s) => pos < s.end);
+    return this.scenes[i < 0 ? this.scenes.length - 1 : i];
+  }
+
+  // ช่วงกิจกรรมที่มีวิดีโอ: เล่นวิดีโอให้จบก่อนไปช่วงถัดไป
+  isVideoScene(sc) {
+    return sc.type === "stay" && sc.t1 > sc.t0 && !!PLACES[sc.pl].video && !this.videoBroken[sc.pl];
+  }
+
+  videoReady(sc) {
+    const v = $("#now-video");
+    return v.dataset.src === PLACES[sc.pl].video && v.readyState >= 1 && isFinite(v.duration) && v.duration > 0;
+  }
+
+  // เลื่อนเวลาในแผนที่ตามตำแหน่งของวิดีโอ
+  stepVideo(sc, now) {
+    const v = $("#now-video");
+    if (!this.videoReady(sc)) {
+      // รอโหลด ถ้านานเกิน 10 วินาทีให้กลับไปใช้เวลาปกติ
+      this.waitSince ??= now;
+      if (now - this.waitSince > 10000) this.videoBroken[sc.pl] = true;
+      return;
+    }
+    this.waitSince = null;
+    if (this.pendingSeek != null) { v.currentTime = this.pendingSeek * v.duration; this.pendingSeek = null; }
+    v.playbackRate = this.speeds[this.speedIdx];
+    if (v.paused && !v.ended && v.dataset.visible) v.play().catch(() => {});
+    const u = v.ended ? 1 : Math.min(.999, v.currentTime / v.duration);
+    this.render(v.ended ? sc.end : sc.start + sc.ms * u);
+  }
+
+  // ซิงก์ตำแหน่งวิดีโอเมื่อเลื่อนแถบเวลาหรือกดข้ามช่วง
+  seekVideo(pos) {
+    const sc = this.sceneAt(pos);
+    if (!this.isVideoScene(sc)) return;
+    const u = Math.max(0, Math.min(.999, (pos - sc.start) / sc.ms));
+    if (this.videoReady(sc)) $("#now-video").currentTime = u * $("#now-video").duration;
+    else this.pendingSeek = u;
   }
 
   jumpTo(i, autoplay = true) {
     this.sceneIdx = -1;
     this.render(this.scenes[i].start);
+    this.seekVideo(this.scenes[i].start);
     if (autoplay && !this.playing) this.play();
   }
 
@@ -502,24 +563,26 @@ class TripPlayer {
   }
 
   // ภาพ/วิดีโอในแผงผู้เล่น (ค่อย ๆ จางเปลี่ยน)
-  showMedia(p) {
+  showMedia(p, asVideo) {
     const box = $(".now-photo");
     const photo = $("#now-photo");
     const video = $("#now-video");
-    const want = p.video || p.image;
+    const want = asVideo ? p.video : p.image;
     if (box.dataset.src === want) return;
     box.dataset.src = want;
     box.classList.add("fade");
     clearTimeout(this.mediaT);
     this.mediaT = setTimeout(() => {
       const muteBtn = box.querySelector(".mute-btn");
-      if (p.video) {
+      if (asVideo) {
+        video.loop = false;
         video.poster = p.image;
         video.dataset.src = p.video;
         video.src = p.video;
-        video.muted = true; setMuteIcon(muteBtn, true);
+        const sound = box.dataset.sound === "1";
+        video.muted = !sound; setMuteIcon(muteBtn, !sound);
         video.hidden = false; photo.hidden = true; muteBtn.hidden = false;
-        if (video.dataset.visible) video.play().catch(() => {});
+        if (video.dataset.visible && !video.dataset.hold) video.play().catch(() => {});
       } else {
         video.pause(); delete video.dataset.src; video.removeAttribute("src"); video.load();
         video.hidden = true; photo.hidden = false; muteBtn.hidden = true;
@@ -534,7 +597,7 @@ class TripPlayer {
     const card = $("#now-card");
     card.classList.remove("swap"); void card.offsetWidth; card.classList.add("swap");
     $("#now-icon").textContent = sc.icon;
-    this.showMedia(PLACES[sc.pl]);
+    this.showMedia(PLACES[sc.pl], this.isVideoScene(sc));
     $("#now-time").textContent = `${sc.time}${sc.dur ? " · " + sc.dur : ""}`;
     $("#now-title").textContent = sc.title;
     $("#now-place").textContent = `📍 ${sc.place}`;
