@@ -292,44 +292,7 @@ a { color: inherit; }
 .far .lbl-beach, .far .lbl-roseta { display: none; }
 .route-trail { filter: drop-shadow(0 0 6px rgba(255,79,123,.6)); }
 
-/* ===== TIMELINE ===== */
-.timeline { list-style: none; margin: 0 auto; padding: 0; position: relative; max-width: 920px; overflow-x: clip; }
-.timeline::before {
-  content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px;
-  background: linear-gradient(180deg, var(--aqua), var(--ocean-500), var(--coral));
-  border-radius: 4px;
-}
-.tl-item { position: relative; width: 50%; padding: 0 40px 34px 0; }
-.tl-item:nth-child(even) { margin-left: 50%; padding: 0 0 34px 40px; }
-.tl-dot {
-  position: absolute; top: 18px; right: -22px; width: 44px; height: 44px; border-radius: 50%;
-  display: grid; place-items: center; font-size: 1.3rem;
-  background: #fff; border: 4px solid var(--teal); box-shadow: var(--shadow); z-index: 2;
-}
-.tl-item:nth-child(even) .tl-dot { right: auto; left: -22px; }
-.tl-card {
-  background: var(--card); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow);
-  cursor: pointer; transition: transform .25s, box-shadow .25s, outline-color .25s;
-  outline: 3px solid transparent;
-}
-.tl-card:hover { transform: translateY(-4px); box-shadow: 0 24px 46px -18px rgba(4,33,59,.45); }
-.tl-item.active .tl-card { outline-color: var(--coral); }
-.tl-item.active .tl-dot { border-color: var(--coral); animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(255,122,89,.18); } }
-.tl-time { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 6px; }
-.tl-time b { font-family: "Kanit"; font-size: 1.15rem; color: var(--ocean-700); }
-.chip {
-  font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 999px;
-  background: #e2f7f5; color: #0b7d74;
-}
-.chip.live { background: var(--coral); color: #fff; animation: pulse 1.6s infinite; }
-.tl-photo { margin: -18px -20px 14px; height: 130px; border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; }
-.tl-photo img, .tl-photo video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s; }
-.tl-card:hover .tl-photo img, .tl-card:hover .tl-photo video { transform: scale(1.05); }
-.tl-card h3 { margin: 0 0 6px; font-size: 1.15rem; }
-.tl-place { color: var(--muted); font-size: .95rem; }
-.tl-hint { margin-top: 8px; font-size: .82rem; color: var(--ocean-500); opacity: 0; transition: opacity .25s; }
-.tl-card:hover .tl-hint { opacity: 1; }
 
 /* ===== PLACES ===== */
 .places { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
@@ -390,13 +353,9 @@ a { color: inherit; }
 /* ===== Reveal on scroll ===== */
 .reveal { opacity: 0; transform: translateY(26px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1); }
 .reveal.in { opacity: 1; transform: none; }
-.tl-item.reveal { transform: translateX(-40px); }
-.tl-item.reveal:nth-child(even) { transform: translateX(40px); }
-.tl-item.reveal.in { transform: none; }
 
 /* ===== Responsive ===== */
 /* ปุ่มเปิด/ปิดเสียงวิดีโอ */
-.tl-photo { position: relative; }
 .mute-btn {
   position: absolute; z-index: 3; top: 10px; left: 10px; width: 38px; height: 38px; border: 0; border-radius: 50%;
   display: grid; place-items: center; font-size: 1.05rem; cursor: pointer;
@@ -440,16 +399,9 @@ a { color: inherit; }
   .controls .btn.icon { width: 48px; height: 48px; }
   .place-art { height: auto; aspect-ratio: 16 / 10; }
   .place.has-video .place-art { aspect-ratio: 4 / 5; }
-  .tl-photo { height: 160px; }
   .stat b { font-size: 1.8rem; }
   .checklist span { padding: 8px 14px; font-size: .92rem; }
   .stats { grid-template-columns: repeat(2, 1fr); }
-  .timeline::before { left: 22px; }
-  .tl-item, .tl-item:nth-child(even) { width: 100%; margin-left: 0; padding: 0 0 26px 62px; }
-  .tl-dot, .tl-item:nth-child(even) .tl-dot { left: 0; right: auto; }
-  .tl-item.reveal, .tl-item.reveal:nth-child(even) { transform: translateY(26px); }
-  .tl-item.reveal.in { transform: none; }
-  .tl-hint { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -121,6 +121,13 @@ const onVideoVisibility = (entries) => {
 const videoIO = new IntersectionObserver(onVideoVisibility, { threshold: .5 });
 // วิดีโอในแผงแผนที่: เล่นต่อตราบใดที่ยังเห็นบางส่วนบนจอ (กันแอนิเมชันค้างตอนเลื่อนหน้าเล็กน้อย)
 const playerVideoIO = new IntersectionObserver(onVideoVisibility, { threshold: .15 });
+// เช็กตรง ๆ ว่าวิดีโออยู่บนจออย่างน้อย 15% (ไม่ต้องรอ IntersectionObserver)
+function onScreen(el) {
+  const r = el.getBoundingClientRect();
+  if (!r.height) return false;
+  const visible = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
+  return visible / r.height >= .15;
+}
 function observeVideos(root = document) {
   root.querySelectorAll("video.lazy-video").forEach((v) => (v.id === "now-video" ? playerVideoIO : videoIO).observe(v));
 }
@@ -250,42 +257,8 @@ function initReveal() {
 }
 
 /* =========================================================
- * TIMELINE + PLACES
+ * PLACES
  * ========================================================= */
-function liveIndex() {
-  const now = new Date();
-  const bkk = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
-  if (bkk.getFullYear() !== 2026 || bkk.getMonth() !== 9 || bkk.getDate() !== 24) return -1;
-  const m = bkk.getHours() * 60 + bkk.getMinutes();
-  for (let i = SCHEDULE.length - 1; i >= 0; i--) if (m >= SCHEDULE[i].t0 && m <= Math.max(SCHEDULE[i].t1, SCHEDULE[i].t0 + 1)) return i;
-  return -1;
-}
-
-function renderTimeline(onPick) {
-  const list = $("#timeline-list");
-  const live = liveIndex();
-  list.innerHTML = SCHEDULE.map((s, i) => `
-    <li class="tl-item reveal" data-i="${i}" style="transition-delay:${(i % 3) * 60}ms">
-      <div class="tl-dot">${s.icon}</div>
-      <div class="tl-card" tabindex="0" role="button" aria-label="ดู ${s.title} บนแผนที่">
-        <div class="tl-photo">${s.type === "stay" && s.t1 > s.t0 ? mediaHTML(PLACES[s.pl]) : `<img src="${imgOf(s.pl)}" alt="${PLACES[s.pl].name}" loading="lazy" />`}</div>
-        <div class="tl-time">
-          <b>${s.time}</b>
-          ${s.dur ? `<span class="chip">⏱ ${s.dur}</span>` : ""}
-          ${i === live ? `<span class="chip live">● กำลังดำเนินการ</span>` : ""}
-        </div>
-        <h3>${s.title}</h3>
-        <div class="tl-place">📍 ${s.place}</div>
-        <div class="tl-hint">🗺️ คลิกเพื่อดูบนแผนที่</div>
-      </div>
-    </li>`).join("");
-  list.querySelectorAll(".tl-card").forEach((card) => {
-    const i = +card.parentElement.dataset.i;
-    card.addEventListener("click", () => onPick(i));
-    card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(i); } });
-  });
-}
-
 function renderPlaces(onPick) {
   $("#places-list").innerHTML = Object.entries(PLACES).map(([key, p]) => `
     <article class="place reveal${p.video ? " has-video" : ""}">
@@ -513,7 +486,7 @@ class TripPlayer {
     this.waitSince = null;
     if (this.pendingSeek != null) { v.currentTime = this.pendingSeek * v.duration; this.pendingSeek = null; }
     v.playbackRate = this.speeds[this.speedIdx];
-    if (v.paused && !v.ended && v.dataset.visible) playPlayerVideo(v);
+    if (v.paused && !v.ended && (v.dataset.visible || onScreen(v))) playPlayerVideo(v);
     const u = v.ended ? 1 : Math.min(.999, v.currentTime / v.duration);
     this.render(v.ended ? sc.end : sc.start + sc.ms * u);
   }
@@ -619,7 +592,7 @@ class TripPlayer {
         video.muted = true;
         if (!muteBtn.classList.contains("need-tap")) setMuteIcon(muteBtn, !playerSoundOn());
         video.hidden = false; photo.hidden = true; muteBtn.hidden = false;
-        if (video.dataset.visible && !video.dataset.hold) playPlayerVideo(video);
+        if ((video.dataset.visible || onScreen(video)) && !video.dataset.hold) playPlayerVideo(video);
       } else {
         video.pause(); delete video.dataset.src; video.removeAttribute("src"); video.load();
         video.hidden = true; photo.hidden = false; muteBtn.hidden = true;
@@ -648,7 +621,6 @@ class TripPlayer {
       b.classList.toggle("active", j === sc.i);
       b.classList.toggle("done", j < sc.i);
     });
-    document.querySelectorAll(".tl-item").forEach((li, j) => li.classList.toggle("active", j === sc.i));
   }
 }
 
@@ -668,7 +640,6 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#map").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
     if (player) player.jumpTo(i, autoplay);
   };
-  renderTimeline(pick);
   renderPlaces(pick);
   observeVideos();
   initReveal();
