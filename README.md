@@ -24,3 +24,20 @@ python3 -m http.server 8000   # แล้วเปิด http://localhost:8000
 - `PLACES` — ชื่อ คำอธิบาย และ **พิกัด** ของแต่ละสถานที่
 - `SCHEDULE` — รายการกำหนดการ (`t0`/`t1` = นาทีนับจากเที่ยงคืน ใช้กับนาฬิกาในแอนิเมชัน)
 - `ROUTES` — เส้นทางสำรอง ถ้าโหลดเส้นทางถนนจริงจาก OSRM ไม่ได้
+
+## Deploy บน Firebase Hosting
+
+1. สร้างโปรเจกต์ที่ <https://console.firebase.google.com> แล้วแก้ `YOUR_FIREBASE_PROJECT_ID` ใน `.firebaserc` เป็น Project ID
+2. Deploy จากเครื่องตัวเอง:
+
+   ```bash
+   npm install -g firebase-tools
+   firebase login
+   firebase deploy --only hosting
+   ```
+
+   จะได้ URL แบบ `https://<project-id>.web.app`
+
+3. (ทางเลือก) Deploy อัตโนมัติเมื่อ push เข้า `main`: สร้าง Service Account key ใน Firebase Console
+   (Project settings → Service accounts → Generate new private key) แล้วเพิ่มเป็น GitHub secret ชื่อ
+   `FIREBASE_SERVICE_ACCOUNT` (วางเนื้อหา JSON ทั้งไฟล์) ใน Settings → Secrets and variables → Actions
