@@ -423,6 +423,9 @@ a { color: inherit; }
 }
 @media (max-width: 720px) {
   .nav-links { display: none; }
+  .hero-cta { width: min(100%, 420px); }
+  .hero-cta .btn.primary { flex: 1 1 100%; }
+  .hero-cta .btn.ghost { flex: 1 1 0; padding-inline: 12px; }
   .section { padding-top: 56px; }
   .section-head { margin-bottom: 22px; }
   .map-wrap { border-radius: 22px; }
