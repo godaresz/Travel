@@ -615,6 +615,7 @@ class TripPlayer {
         video.hidden = true; photo.hidden = false; muteBtn.hidden = true;
         photo.src = p.image; photo.alt = p.name;
       }
+      box.classList.toggle("is-video", !!asVideo); // วิดีโอแนวตั้ง แสดงกรอบใหญ่กว่าแผนที่
       box.classList.remove("fade");
     }, 250);
   }
