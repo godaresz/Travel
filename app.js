@@ -37,12 +37,14 @@ const PLACES = {
     art: "linear-gradient(135deg,#ffd27a,#ff9f6e)",
   },
   roseta: {
-    image: "images/roseta.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/roseta.jpg"
-    name: "Roseta บางแสน",
-    desc: "ร้านอาหารริมทะเล ทานมื้อเย็นร่วมกัน",
+    image: "images/rosetta.jpg",
+    video: "images/rosetta.mp4", // ตัดจากคลิป TikTok @uncleprettyplease_
+    credit: { label: "@uncleprettyplease_", url: "https://www.tiktok.com/@uncleprettyplease_" },
+    name: "Rosetta Beach Club",
+    desc: "ร้านอาหารริมทะเล ถ.บางแสนล่าง ทานมื้อเย็นร่วมกัน · ร้านอาหารเปิด 11:00–22:00 น. · โทร 098-951-6196",
     icon: "🍽️",
-    latlng: [13.2630, 100.9225],
-    query: "Roseta Bangsaen",
+    latlng: [13.2630, 100.9225], // พิกัดโดยประมาณ (ถ.บางแสนล่าง ฝั่งหาดวอนนภา)
+    query: "Rosetta Beach Club Bangsaen",
     art: "linear-gradient(135deg,#7b5cff,#ff4f7b)",
   },
 };
@@ -79,9 +81,9 @@ const SCHEDULE = [
     type: "move", route: "aquaToBeach", mover: "🚶", t0: 750, t1: 765 },
   { time: "13:00น.-16:00น.", dur: "2ชั่วโมง", title: "รับ(ข้าวกล่อง) พักผ่อนตามอัธยาศัย", place: "หาดบางแสน โซนหน้ารร.S2บางแสน", icon: "🏖️",
     type: "stay", at: "beach", t0: 765, t1: 960 },
-  { time: "16:00น.-16:15น.", dur: "15นาที", title: "เดินทางไปร้านอาหารริมทะเล", place: "หาดบางแสน → Roseta บางแสน", icon: "🛣️",
+  { time: "16:00น.-16:15น.", dur: "15นาที", title: "เดินทางไปร้านอาหารริมทะเล", place: "หาดบางแสน → Rosetta Beach Club", icon: "🛣️",
     type: "move", route: "beachToRoseta", mover: "🚐", t0: 960, t1: 975 },
-  { time: "16:00น.-19:00น.", dur: "3ชั่วโมงครึ่ง", title: "รับประทานอาหารเย็นร่วมกัน", place: "Roseta บางแสน", icon: "🍽️",
+  { time: "16:00น.-19:00น.", dur: "3ชั่วโมงครึ่ง", title: "รับประทานอาหารเย็นร่วมกัน", place: "Rosetta Beach Club", icon: "🍽️",
     type: "stay", at: "roseta", t0: 975, t1: 1140 },
   { time: "19:00น.-21:00น.", dur: "2ชั่วโมง", title: "เดินทางกลับLDC-SR", place: "หาดบางแสน → LDC-SR", icon: "🏠",
     type: "move", route: "home", mover: "🚐", t0: 1140, t1: 1260 },
