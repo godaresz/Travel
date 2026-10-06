@@ -299,10 +299,10 @@ class TripPlayer {
     this.map.on("blur", () => this.map.scrollWheelZoom.disable());
 
     this.markers = {};
-    Object.entries(PLACES).forEach(([key, p]) => {
+    Object.entries(PLACES).forEach(([key, p], n) => {
       const icon = L.divIcon({
         className: "", iconSize: [44, 44], iconAnchor: [22, 44],
-        html: `<div class="pin ${key === "ldc" ? "home" : ""}"><span>${p.icon}</span></div>`,
+        html: `<div class="pin-drop" style="--n:${n}"><div class="pin ${key === "ldc" ? "home" : ""}"><span>${p.icon}</span></div></div>`,
       });
       this.markers[key] = L.marker(p.latlng, { icon, riseOnHover: true })
         .addTo(this.map)
@@ -313,7 +313,8 @@ class TripPlayer {
     this.map.on("zoomend", syncZoom);
     syncZoom();
 
-    this.moverIcon = (emoji) => L.divIcon({ className: "", iconSize: [48, 48], iconAnchor: [24, 24], html: `<div class="mover bob">${emoji}</div>` });
+    this.moverIcon = (emoji) => L.divIcon({ className: "", iconSize: [48, 48], iconAnchor: [24, 24], html: `<div class="mover-wrap"><div class="mover bob">${emoji}</div></div>` });
+    this.lastDust = 0;
     this.mover = L.marker(PLACES.ldc.latlng, { icon: this.moverIcon("🚐"), zIndexOffset: 1000, interactive: false }).addTo(this.map);
     this.moverEmoji = "🚐";
 
@@ -342,7 +343,7 @@ class TripPlayer {
 
   // สร้างฉาก (scene) จาก SCHEDULE พร้อมเส้นทาง
   buildScenes() {
-    if (this.scenes) this.scenes.forEach((s) => { s.bg && s.bg.remove(); s.trail && s.trail.remove(); });
+    if (this.scenes) this.scenes.forEach((s) => { s.bg && s.bg.remove(); s.trail && s.trail.remove(); s.flow && s.flow.remove(); });
     let acc = 0;
     this.scenes = SCHEDULE.map((s, i) => {
       const sc = { ...s, i, start: acc };
@@ -355,6 +356,8 @@ class TripPlayer {
         sc.ms = sc.len > 5000 ? ANIM_MS.drive : ANIM_MS.walk;
         sc.bg = L.polyline(path, { color: "#1584c4", weight: 5, opacity: .25, dashArray: "2 10", lineCap: "round" }).addTo(this.map);
         sc.trail = L.polyline([], { color: "#ff4f7b", weight: 6, opacity: .9, lineCap: "round", className: "route-trail" }).addTo(this.map);
+        // แสงวิ่งไหลไปตามเส้นทางที่ผ่านแล้ว
+        sc.flow = L.polyline([], { color: "#fff", weight: 2.5, opacity: .95, lineCap: "round", dashArray: "1 16", className: "route-flow", interactive: false }).addTo(this.map);
       } else {
         sc.ms = s.t1 === s.t0 ? ANIM_MS.shortStay : ANIM_MS.stay;
       }
@@ -545,16 +548,19 @@ class TripPlayer {
     // เส้นทางที่ผ่านมาแล้ว
     this.scenes.forEach((s, j) => {
       if (s.type !== "move") return;
-      if (j < idx) s.trail.setLatLngs(s.path);
-      else if (j > idx) s.trail.setLatLngs([]);
+      if (j < idx) { s.trail.setLatLngs(s.path); s.flow.setLatLngs(s.path); }
+      else if (j > idx) { s.trail.setLatLngs([]); s.flow.setLatLngs([]); }
     });
 
     let here;
     if (sc.type === "move") {
       const { pt, k } = this.pointAlong(sc, ease(u));
       here = pt;
-      sc.trail.setLatLngs([...sc.path.slice(0, k), pt]);
+      const done = [...sc.path.slice(0, k), pt];
+      sc.trail.setLatLngs(done);
+      sc.flow.setLatLngs(done);
       if (this.moverEmoji !== sc.mover) { this.moverEmoji = sc.mover; this.mover.setIcon(this.moverIcon(sc.mover)); }
+      this.steer(sc, u, pt);
     } else {
       here = PLACES[sc.at].latlng;
     }
@@ -602,6 +608,42 @@ class TripPlayer {
     }, 250);
   }
 
+  // หันหัวรถตามทิศทาง + ฝุ่น/ฟองเล็ก ๆ ตามหลัง
+  steer(sc, u, pt) {
+    const ahead = this.pointAlong(sc, Math.min(1, ease(Math.min(1, u + .02)))).pt;
+    const a = this.map.latLngToLayerPoint(pt), b = this.map.latLngToLayerPoint(ahead);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const wrap = this.mover.getElement()?.querySelector(".mover-wrap");
+    if (wrap && Math.hypot(dx, dy) > .5) {
+      // อีโมจิรถตู้หันหน้าไปทางซ้าย: ถ้าวิ่งไปทางขวาให้กลับด้าน และเอียงตามความชัน
+      const right = dx > 0;
+      const tilt = Math.max(-25, Math.min(25, Math.atan2(dy, Math.abs(dx)) * 180 / Math.PI)) * (right ? 1 : -1);
+      wrap.style.transform = `scaleX(${right ? -1 : 1}) rotate(${right ? -tilt : tilt}deg)`;
+    }
+    const now = performance.now();
+    if (!reduceMotion && this.playing && now - this.lastDust > 110) {
+      this.lastDust = now;
+      const dot = L.circleMarker(pt, { radius: sc.mover === "🚶" ? 3 : 5, stroke: false, fillColor: sc.mover === "🚶" ? "#ffd27a" : "#ff8fab", fillOpacity: .8, className: "dust", interactive: false }).addTo(this.map);
+      setTimeout(() => dot.remove(), 1200);
+    }
+  }
+
+  // ฉลองเมื่อถึงที่หมาย: วงคลื่น + คอนเฟตติ
+  celebrate(latlng) {
+    if (reduceMotion) return;
+    const colors = ["#ff7a59", "#ffc94d", "#12c2b4", "#7fe7e0", "#ff4f7b", "#fff"];
+    const bits = Array.from({ length: 18 }, (_, i) => {
+      const ang = (i / 18) * Math.PI * 2 + Math.random() * .3;
+      const dist = 40 + Math.random() * 40;
+      return `<i style="--x:${(Math.cos(ang) * dist).toFixed(0)}px;--y:${(Math.sin(ang) * dist - 20).toFixed(0)}px;--r:${Math.round(Math.random() * 540)}deg;background:${colors[i % colors.length]};animation-delay:${Math.random() * 80}ms"></i>`;
+    }).join("");
+    const m = L.marker(latlng, {
+      interactive: false, zIndexOffset: 900,
+      icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="burst"><span class="ring"></span><span class="ring r2"></span>${bits}</div>` }),
+    }).addTo(this.map);
+    setTimeout(() => m.remove(), 1800);
+  }
+
   onScene(sc, instant) {
     this.camera(sc, instant);
     const card = $("#now-card");
@@ -615,6 +657,8 @@ class TripPlayer {
     Object.values(this.markers).forEach((m) => m.getElement()?.querySelector(".pin")?.classList.remove("active"));
     const activeKey = sc.type === "stay" ? sc.at : null;
     if (activeKey) this.markers[activeKey].getElement()?.querySelector(".pin")?.classList.add("active");
+    const arrived = this.scenes[sc.i - 1]?.type === "move";
+    if (activeKey && arrived && !instant && this.playing) setTimeout(() => this.celebrate(PLACES[activeKey].latlng), 500);
 
     document.querySelectorAll("#steps button").forEach((b, j) => {
       b.classList.toggle("active", j === sc.i);

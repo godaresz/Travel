@@ -404,7 +404,197 @@ a { color: inherit; }
   .stats { grid-template-columns: repeat(2, 1fr); }
 }
 
+
+/* =========================================================
+ * ANIMATION FX
+ * ========================================================= */
+
+/* ----- Intro: ม่านคลื่นเปิดหน้าเว็บ ----- */
+.intro {
+  position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(180deg, #ff9f6e 0%, #ffc685 30%, #7fd3e8 62%, #1584c4 100%);
+  transition: transform 1s cubic-bezier(.76,0,.24,1);
+  cursor: pointer;
+}
+.intro.out { transform: translateY(calc(-100% - 90px)); }
+.intro-edge { position: absolute; left: 0; top: 100%; width: 100%; height: 90px; fill: #1584c4; }
+.intro-sun {
+  position: absolute; width: 260px; height: 260px; border-radius: 50%; left: 50%; top: 50%; margin: -130px 0 0 -130px;
+  background: radial-gradient(circle, #fff6c9 0%, var(--sun) 40%, rgba(255,159,110,0) 70%);
+  animation: introSun 1.6s cubic-bezier(.2,.8,.2,1) both;
+}
+.intro-text { position: relative; text-align: center; display: grid; justify-items: center; gap: 4px; }
+.intro-text b {
+  font-family: "Kanit", sans-serif; font-size: clamp(3.2rem, 14vw, 6rem); line-height: 1; letter-spacing: .02em;
+  text-shadow: 0 10px 30px rgba(4,33,59,.35);
+  animation: introText 1s cubic-bezier(.2,.8,.2,1) .15s both;
+}
+.intro-text small { font-family: "Kanit", sans-serif; letter-spacing: .5em; opacity: .9; animation: introText 1s cubic-bezier(.2,.8,.2,1) .35s both; }
+.intro-wave { font-size: 2.4rem; animation: introWave 1.2s ease-in-out infinite alternate; }
+@keyframes introSun { from { transform: translateY(120px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes introText { from { transform: translateY(30px); opacity: 0; filter: blur(8px); } to { transform: none; opacity: 1; filter: none; } }
+@keyframes introWave { from { transform: rotate(-12deg) translateY(0); } to { transform: rotate(12deg) translateY(-6px); } }
+
+/* ----- แถบความคืบหน้าการเลื่อน ----- */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 9000; pointer-events: none;
+  background: linear-gradient(90deg, var(--teal), var(--aqua), var(--sun), var(--coral));
+  transform: scaleX(0); transform-origin: left;
+}
+
+/* ----- Hero: ตัวอักษร "บางแสน" ลอยขึ้นทีละตัว + ประกายแสงวิ่ง ----- */
+.title .t1 .ch {
+  display: inline-block;
+  background: linear-gradient(110deg, #fff 38%, #fff3b0 50%, #fff 62%) 0 0 / 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  opacity: 0;
+}
+body.ready .title .t1 .ch {
+  animation:
+    letterIn .95s cubic-bezier(.2,.9,.25,1.15) calc(var(--i) * 90ms + 250ms) both,
+    letterFloat 3.6s ease-in-out calc(var(--i) * 180ms + 1.6s) infinite,
+    shimmer 4.5s linear calc(var(--i) * 120ms + 1.6s) infinite;
+}
+@keyframes letterIn {
+  from { opacity: 0; transform: translateY(70px) rotate(10deg) scale(.7); filter: blur(10px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+@keyframes letterFloat { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(-8px); opacity: 1; } }
+@keyframes shimmer { 0% { background-position: 100% 0; } 60%, 100% { background-position: -50% 0; } }
+
+/* องค์ประกอบใน hero ค่อย ๆ ปรากฏต่อกันหลังม่านเปิด */
+body:not(.ready) .hero .reveal { opacity: 0 !important; transform: translateY(26px) !important; }
+.hero .eyebrow.reveal { transition-delay: .1s; }
+.hero .title.reveal { transition-delay: .2s; }
+.hero .date-pill.reveal { transition-delay: .9s; }
+.hero .countdown.reveal { transition-delay: 1.05s; }
+.hero .hero-cta.reveal { transition-delay: 1.2s; }
+
+/* Parallax (ใช้ translate แยกจาก transform เพื่อไม่ชนกับแอนิเมชันเดิม) */
+.sun, .c1, .c3 { translate: 0 var(--py, 0px); }
+.hero-content { translate: 0 var(--py, 0px); opacity: var(--fade, 1); }
+
+/* ประกายบนผิวน้ำ */
+.sparkle {
+  position: absolute; z-index: 3; width: 4px; height: 4px; border-radius: 50%; pointer-events: none;
+  background: #fff; box-shadow: 0 0 8px 2px rgba(255,255,255,.8);
+  animation: twinkle 3s ease-in-out infinite;
+}
+.sparkle::before, .sparkle::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+}
+.sparkle::before { width: 22px; height: 1.5px; margin: -.75px 0 0 -11px; }
+.sparkle::after { width: 1.5px; height: 16px; margin: -8px 0 0 -.75px; background: linear-gradient(180deg, transparent, #fff, transparent); }
+@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.2); } 50% { opacity: 1; transform: scale(1); } }
+
+/* ปุ่มหลัก: แสงวิ่งผ่าน + เรืองแสงเบา ๆ */
+.btn { position: relative; overflow: hidden; isolation: isolate; }
+.btn.primary::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%);
+  transform: translateX(-120%); animation: btnShine 3.8s ease-in-out 2.5s infinite;
+}
+@keyframes btnShine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+#hero-play { animation: glow 2.4s ease-in-out 2.4s infinite; }
+@keyframes glow { 0%, 100% { box-shadow: 0 12px 26px -10px rgba(255,79,123,.8); } 50% { box-shadow: 0 12px 34px -6px rgba(255,79,123,1), 0 0 0 6px rgba(255,255,255,.18); } }
+.ripple {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
+  background: rgba(255,255,255,.45); transform: scale(0); animation: rippleOut .65s ease-out forwards;
+}
+@keyframes rippleOut { to { transform: scale(1); opacity: 0; } }
+.steps button { position: relative; overflow: hidden; }
+
+/* ----- หัวข้อ section: เส้นใต้ค่อย ๆ ลากออก ----- */
+.section-head h2::after { transform: scaleX(0); transition: transform .9s cubic-bezier(.2,.8,.2,1) .35s; }
+.section-head.in h2::after { transform: scaleX(1); }
+
+/* ----- การ์ดตัวเลขสรุป / ของที่ต้องพก / การ์ดสถานที่: ปรากฏต่อกัน ----- */
+.stats .stat.reveal { transform: translateY(30px) scale(.9); transition-delay: var(--d, 0ms); }
+.stats .stat.reveal.in { transform: none; }
+.checklist span { opacity: 0; transform: translateY(16px) scale(.8); transition: opacity .5s ease var(--d, 0ms), transform .5s cubic-bezier(.3,1.5,.5,1) var(--d, 0ms); }
+.checklist.in span { opacity: 1; transform: none; }
+.checklist.in span:hover { transform: scale(1.08) rotate(-3deg); transition-delay: 0ms; }
+.places .place.reveal { transform: translateY(40px) rotateX(12deg); transform-origin: 50% 100%; }
+.places .place.reveal.in { transform: none; }
+.places .place:nth-child(2) { transition-delay: .1s; }
+.places .place:nth-child(3) { transition-delay: .2s; }
+.places .place:nth-child(4) { transition-delay: .3s; }
+
+/* เอียง 3D ตามเมาส์ + แสงสะท้อน */
+.place, .stat { transition: transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .35s, opacity .8s ease; }
+.places .place.reveal.in.tilting, .stats .stat.reveal.in.tilting {
+  transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-6px);
+  box-shadow: 0 30px 50px -22px rgba(4,33,59,.5); transition-delay: 0ms;
+}
+.place::after, .stat::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.35), transparent 55%);
+}
+.stat { position: relative; }
+.tilting::after { opacity: 1; }
+
+/* ----- แผนที่ ----- */
+.route-flow { animation: flow .9s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -34; } }
+.dust { transform-box: fill-box; transform-origin: center; animation: dust 1.2s ease-out forwards; }
+@keyframes dust { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(2.6); } }
+.mover-wrap { transition: transform .3s ease; }
+.mover.bob { animation: bob .6s ease-in-out infinite alternate, moverPulse 1.8s ease-out infinite; }
+@keyframes moverPulse { 0% { box-shadow: 0 10px 22px -8px rgba(255,79,123,.9), 0 0 0 0 rgba(255,122,89,.5); } 100% { box-shadow: 0 10px 22px -8px rgba(255,79,123,.9), 0 0 0 16px rgba(255,122,89,0); } }
+
+.pin-drop { opacity: 0; }
+.map-wrap.in .pin-drop { animation: pinDrop .8s cubic-bezier(.3,1.6,.5,1) calc(var(--n) * 160ms + .4s) both; }
+@keyframes pinDrop { from { opacity: 0; transform: translateY(-70px) scale(.6); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
+.pin.active { animation: pinBounce 1.4s ease-in-out infinite; }
+@keyframes pinBounce { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+
+.burst { position: relative; width: 0; height: 0; pointer-events: none; }
+.burst .ring {
+  position: absolute; left: -10px; top: -30px; width: 20px; height: 20px; border-radius: 50%;
+  border: 3px solid var(--coral); animation: ring 1.1s ease-out forwards;
+}
+.burst .ring.r2 { border-color: var(--teal); animation-delay: .18s; }
+@keyframes ring { from { transform: scale(.4); opacity: 1; } to { transform: scale(6); opacity: 0; } }
+.burst i {
+  position: absolute; left: -4px; top: -26px; width: 8px; height: 12px; border-radius: 2px; opacity: 0;
+  animation: confetti 1.5s cubic-bezier(.2,.7,.4,1) forwards;
+}
+@keyframes confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  60% { opacity: 1; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
+  100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 40px)) rotate(calc(var(--r) * 1.5)); }
+}
+
+/* แผงผู้เล่น: นาฬิกาเรืองแสง + การ์ดเปลี่ยนแบบลื่นไหล */
+.clock #clock { text-shadow: 0 0 18px rgba(127,231,224,.45); }
+.now-card.swap { animation: cardIn .6s cubic-bezier(.2,.9,.25,1.1); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(14px) scale(.97); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+.now-card.swap .now-icon { animation: iconPop .6s cubic-bezier(.3,1.6,.5,1); }
+@keyframes iconPop { from { transform: scale(.3) rotate(-30deg); } to { transform: none; } }
+
+/* ----- Footer: คลื่น + ปูเดินไปมา ----- */
+.footer { overflow: hidden; }
+.foot-waves { position: absolute; left: 0; right: 0; top: 0; height: 60px; pointer-events: none; }
+.fw { position: absolute; top: 0; left: 0; width: 200%; height: 100%; }
+.fw1 { fill: var(--bg); z-index: 1; animation: waveMove 16s linear infinite; }
+.fw2 { fill: rgba(18,194,180,.35); top: 10px; animation: waveMove 11s linear infinite reverse; }
+.crab {
+  position: absolute; bottom: 12px; left: 4%; font-size: 1.9rem;
+  animation: crabWalk 16s ease-in-out infinite alternate, crabStep .35s ease-in-out infinite alternate;
+}
+@keyframes crabWalk { from { left: 4%; } to { left: calc(96% - 32px); } }
+@keyframes crabStep { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-3px) rotate(6deg); } }
+.footer { padding-bottom: 70px; }
+.shells { position: absolute; right: 6%; bottom: 16px; display: flex; gap: 18px; opacity: .8; }
+.shells span { animation: shellFloat 3s ease-in-out infinite alternate; }
+.shells span:nth-child(2) { animation-delay: -1s; }
+.shells span:nth-child(3) { animation-delay: -2s; }
+@keyframes shellFloat { from { transform: translateY(0) rotate(-8deg); } to { transform: translateY(-6px) rotate(8deg); } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .sun { opacity: 1; transform: translateY(-40px); }
+  .sparkle, .burst, .dust { display: none; }
+  .pin-drop, .title .t1 .ch, .checklist span { opacity: 1 !important; }
 }

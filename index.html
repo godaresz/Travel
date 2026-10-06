@@ -12,6 +12,18 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ===== INTRO: ม่านคลื่นเปิดหน้าเว็บ ===== -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <div class="intro-sun"></div>
+    <div class="intro-text">
+      <span class="intro-wave">🌊</span>
+      <b>บางแสน</b>
+      <small>24 · 10 · 2026</small>
+    </div>
+    <svg class="intro-edge" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,0 L1440,0 L1440,60 C1200,120 960,0 720,60 C480,120 240,0 0,60 Z"/></svg>
+  </div>
+  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
   <!-- ===== HERO ===== -->
   <header class="hero" id="top">
     <div class="sky">
@@ -134,11 +146,18 @@
   </main>
 
   <footer class="footer">
+    <div class="foot-waves" aria-hidden="true">
+      <svg class="fw fw1" viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,0 L0,0 Z"/></svg>
+      <svg class="fw fw2" viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,30 C240,0 480,70 720,30 C960,0 1200,70 1440,30 L1440,0 L0,0 Z"/></svg>
+    </div>
     <div class="sand-dots" aria-hidden="true"></div>
+    <div class="crab" aria-hidden="true">🦀</div>
+    <div class="shells" aria-hidden="true"><span>🐚</span><span>⭐</span><span>🐚</span></div>
     <p>🐚 แล้วพบกันที่บางแสน · 24.10.2026 🐚</p>
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="fx.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
