@@ -107,7 +107,7 @@ const CARTO_KEY = "";
 const TRIP_START = new Date("2026-10-24T08:00:00+07:00");
 
 // ---------- Utilities ----------
-const videoIO = new IntersectionObserver((entries) => {
+const onVideoVisibility = (entries) => {
   entries.forEach(({ target: v, isIntersecting }) => {
     v.dataset.visible = isIntersecting ? "1" : "";
     if (isIntersecting) {
@@ -117,9 +117,12 @@ const videoIO = new IntersectionObserver((entries) => {
       v.pause();
     }
   });
-}, { threshold: .5 });
+};
+const videoIO = new IntersectionObserver(onVideoVisibility, { threshold: .5 });
+// วิดีโอในแผงแผนที่: เล่นต่อตราบใดที่ยังเห็นบางส่วนบนจอ (กันแอนิเมชันค้างตอนเลื่อนหน้าเล็กน้อย)
+const playerVideoIO = new IntersectionObserver(onVideoVisibility, { threshold: .15 });
 function observeVideos(root = document) {
-  root.querySelectorAll("video.lazy-video").forEach((v) => videoIO.observe(v));
+  root.querySelectorAll("video.lazy-video").forEach((v) => (v.id === "now-video" ? playerVideoIO : videoIO).observe(v));
 }
 function setMuteIcon(btn, muted) {
   btn.textContent = muted ? "🔇" : "🔊";
@@ -547,8 +550,15 @@ class TripPlayer {
       const b = L.latLngBounds(sc.path).pad(.25);
       instant ? this.map.fitBounds(b, { animate: false }) : this.map.flyToBounds(b, opts);
     } else {
-      const ll = PLACES[sc.at].latlng;
+      let ll = L.latLng(PLACES[sc.at].latlng);
       const z = sc.at === "ldc" ? 14 : 16;
+      // จอเล็ก: วิดีโอลอยทับด้านขวาของแผนที่ เลื่อนจุดศูนย์กลางให้หมุดอยู่ในพื้นที่ซ้ายที่ยังมองเห็น
+      if (this.isVideoScene(sc) && window.matchMedia("(max-width: 900px)").matches) {
+        const size = this.map.getSize();
+        const videoW = (size.y - 24) * 9 / 16 + 12;
+        const dx = Math.max(0, videoW / 2);
+        ll = this.map.unproject(this.map.project(ll, z).add([dx, 0]), z);
+      }
       instant ? this.map.setView(ll, z, { animate: false }) : this.map.flyTo(ll, z, opts);
     }
   }
