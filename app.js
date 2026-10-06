@@ -27,8 +27,7 @@ const PLACES = {
   },
   beach: {
     image: "images/beach.jpg",
-    video: "images/beach.mp4", // คลิปเต็มจาก TikTok @chonburilove
-    credit: { label: "@chonburilove", url: "https://www.tiktok.com/@chonburilove/video/7534230236008008978" },
+    video: "images/beach.mp4", // คลิปพระอาทิตย์ตกบางแสน
     name: "หาดบางแสน (โซนหน้า รร.S2)",
     desc: "รับข้าวกล่อง พักผ่อน เล่นน้ำ ตามอัธยาศัย",
     icon: "🏖️",
