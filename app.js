@@ -6,10 +6,11 @@
 // ---------- สถานที่ (พิกัดโดยประมาณ แก้ไขได้ตามจริง) ----------
 const PLACES = {
   ldc: {
-    name: "LDC-SR",
+    name: "LINEX (LDC-SR)",
     desc: "จุดนัดพบ เช็คชื่อ ขึ้นรถตู้ และจุดส่งกลับ",
+    url: "https://maps.app.goo.gl/37bQbR1dCGTD195VA",
     icon: "🏢",
-    latlng: [13.6930, 100.6460], // TODO: ใส่พิกัดจริงของ LDC-SR
+    latlng: [13.6930, 100.6460], // TODO: ใส่พิกัดจริงของ LINEX (ดูจากลิงก์ url ด้านบน)
     query: "13.6930,100.6460",
     art: "linear-gradient(135deg,#ff9f6e,#ff4f7b)",
   },
@@ -202,7 +203,7 @@ function renderPlaces(onPick) {
         <h3>${p.name}</h3>
         <p>${p.desc}</p>
         <a href="#map" data-place="${key}">🗺️ ดูบนแผนที่</a> ·
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.query)}" target="_blank" rel="noopener">Google Maps ↗</a>
+        <a href="${p.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.query)}`}" target="_blank" rel="noopener">Google Maps ↗</a>
       </div>
     </article>`).join("");
   document.querySelectorAll("[data-place]").forEach((a) =>
