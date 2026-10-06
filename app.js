@@ -82,6 +82,9 @@ const SCHEDULE = [
 
 // ระยะเวลาแอนิเมชันของแต่ละประเภท (ms)
 const ANIM_MS = { stay: 2600, shortStay: 1400, drive: 8000, walk: 3800 };
+// ภาพแผนที่: ถ้าใส่ CARTO basemap key (https://carto.com/basemaps/apikey) จะใช้สไตล์ CARTO Voyager
+// ถ้าเว้นว่างจะใช้ OpenStreetMap ซึ่งไม่ต้องใช้ key
+const CARTO_KEY = "";
 const TRIP_START = new Date("2026-10-24T08:00:00+07:00");
 
 // ---------- Utilities ----------
@@ -220,10 +223,11 @@ class TripPlayer {
   constructor() {
     this.map = L.map("leaflet", { zoomControl: true, scrollWheelZoom: false, attributionControl: true })
       .setView(PLACES.ldc.latlng, 11);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      maxZoom: 19, subdomains: "abcd",
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    }).addTo(this.map);
+    const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+    const tiles = CARTO_KEY
+      ? { url: `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=${CARTO_KEY}`, attribution: `${osmAttr} &copy; <a href="https://carto.com/">CARTO</a>` }
+      : { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: osmAttr };
+    L.tileLayer(tiles.url, { maxZoom: 19, attribution: tiles.attribution }).addTo(this.map);
     this.map.on("focus", () => this.map.scrollWheelZoom.enable());
     this.map.on("blur", () => this.map.scrollWheelZoom.disable());
 
