@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bangsaen Trip 2026</title>
+  <meta name="description" content="กำหนดการท่องเที่ยวประจำปี บางแสน 24 ตุลาคม 2026" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&family=Sarabun:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===== HERO ===== -->
+  <header class="hero" id="top">
+    <div class="sky">
+      <div class="sun"></div>
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+      <div class="gull g1">〰</div>
+      <div class="gull g2">〰</div>
+    </div>
+
+    <nav class="nav">
+      <a href="#top" class="brand">🌊 Bangsaen Trip</a>
+      <div class="nav-links">
+        <a href="#map">แผนที่</a>
+        <a href="#timeline">กำหนดการ</a>
+        <a href="#places">สถานที่</a>
+      </div>
+    </nav>
+
+    <div class="hero-content">
+      <p class="eyebrow reveal">ทริปท่องเที่ยวประจำปี</p>
+      <h1 class="title reveal">
+        <span class="t1">บางแสน</span>
+        <span class="t2">Sea · Sand · Smile</span>
+      </h1>
+      <p class="date-pill reveal">📅 วันเสาร์ที่ 24 ตุลาคม 2026 · 08:00 – 21:00 น.</p>
+
+      <div class="countdown reveal" id="countdown" aria-live="polite">
+        <div class="cd"><b id="cd-d">--</b><span>วัน</span></div>
+        <div class="cd"><b id="cd-h">--</b><span>ชั่วโมง</span></div>
+        <div class="cd"><b id="cd-m">--</b><span>นาที</span></div>
+        <div class="cd"><b id="cd-s">--</b><span>วินาที</span></div>
+      </div>
+      <p class="countdown-msg" id="countdown-msg"></p>
+
+      <div class="hero-cta reveal">
+        <a href="#map" class="btn primary" id="hero-play">▶ ดูเส้นทางการเดินทาง</a>
+        <a href="#timeline" class="btn ghost">ดูกำหนดการ</a>
+      </div>
+    </div>
+
+    <div class="bubbles" id="bubbles" aria-hidden="true"></div>
+
+    <div class="waves" aria-hidden="true">
+      <svg class="wave w1" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,60 C240,110 480,10 720,60 C960,110 1200,10 1440,60 L1440,120 L0,120 Z"/></svg>
+      <svg class="wave w2" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,70 C240,20 480,120 720,70 C960,20 1200,120 1440,70 L1440,120 L0,120 Z"/></svg>
+      <svg class="wave w3" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,120 L0,120 Z"/></svg>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== STATS ===== -->
+    <section class="stats">
+      <div class="stat reveal"><b data-count="9">0</b><span>กิจกรรม</span></div>
+      <div class="stat reveal"><b data-count="13">0</b><span>ชั่วโมงแห่งความสุข</span></div>
+      <div class="stat reveal"><b data-count="4">0</b><span>สถานที่</span></div>
+      <div class="stat reveal"><b data-count="1">0</b><span>ทีมเดียวกัน</span></div>
+    </section>
+
+    <!-- ===== MAP ===== -->
+    <section class="section" id="map">
+      <div class="section-head reveal">
+        <h2>เส้นทางการเดินทาง</h2>
+        <p>กด <b>เล่น</b> เพื่อดูแอนิเมชันการเดินทางทั้งวัน หรือคลิกที่กิจกรรมเพื่อข้ามไปยังช่วงนั้น</p>
+      </div>
+
+      <div class="map-wrap reveal">
+        <div id="leaflet" class="leaflet-map" role="application" aria-label="แผนที่เส้นทาง"></div>
+
+        <aside class="player">
+          <div class="clock">
+            <span class="clock-icon">🕗</span>
+            <span id="clock">08:00</span><small>น.</small>
+          </div>
+          <div class="now-card" id="now-card">
+            <div class="now-icon" id="now-icon">📋</div>
+            <div>
+              <div class="now-time" id="now-time">08:00น.</div>
+              <div class="now-title" id="now-title">รวมตัวเช็คชื่อขึ้นรถตู้</div>
+              <div class="now-place" id="now-place">📍 LDC-SR</div>
+            </div>
+          </div>
+
+          <div class="progress">
+            <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="ตำแหน่งการเล่น" />
+            <div class="steps" id="steps"></div>
+          </div>
+
+          <div class="controls">
+            <button class="btn icon" id="btn-prev" title="ก่อนหน้า" aria-label="ก่อนหน้า">⏮</button>
+            <button class="btn primary play" id="btn-play" aria-label="เล่น">▶ เล่น</button>
+            <button class="btn icon" id="btn-next" title="ถัดไป" aria-label="ถัดไป">⏭</button>
+            <button class="btn icon" id="btn-speed" title="ความเร็ว" aria-label="ความเร็ว">1x</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== TIMELINE ===== -->
+    <section class="section" id="timeline">
+      <div class="section-head reveal">
+        <h2>กำหนดการ</h2>
+        <p>วันเสาร์ที่ 24 ตุลาคม 2026</p>
+      </div>
+      <ol class="timeline" id="timeline-list"></ol>
+    </section>
+
+    <!-- ===== PLACES ===== -->
+    <section class="section" id="places">
+      <div class="section-head reveal">
+        <h2>สถานที่ในทริป</h2>
+        <p>เปิดใน Google Maps เพื่อนำทางได้ทันที</p>
+      </div>
+      <div class="places" id="places-list"></div>
+    </section>
+
+    <!-- ===== CHECKLIST ===== -->
+    <section class="section">
+      <div class="section-head reveal">
+        <h2>อย่าลืมพกไปด้วย</h2>
+      </div>
+      <div class="checklist reveal">
+        <span>🧴 ครีมกันแดด</span><span>🕶️ แว่นกันแดด</span><span>👒 หมวก</span>
+        <span>🩱 ชุดเล่นน้ำ</span><span>🧻 ผ้าเช็ดตัว</span><span>🔋 พาวเวอร์แบงก์</span>
+        <span>💵 เงินสดค่าบัตร</span><span>💊 ยาประจำตัว</span><span>🩴 รองเท้าแตะ</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="sand-dots" aria-hidden="true"></div>
+    <p>🐚 แล้วพบกันที่บางแสน · 24.10.2026 🐚</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
