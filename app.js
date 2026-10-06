@@ -112,7 +112,7 @@ const videoIO = new IntersectionObserver((entries) => {
     v.dataset.visible = isIntersecting ? "1" : "";
     if (isIntersecting) {
       if (!v.getAttribute("src") && v.dataset.src) v.src = v.dataset.src;
-      if (v.getAttribute("src") && !v.dataset.hold) v.play().catch(() => {});
+      if (v.getAttribute("src") && !v.dataset.hold) (v.id === "now-video" ? playPlayerVideo(v) : v.play().catch(() => {}));
     } else {
       v.pause();
     }
@@ -141,9 +141,36 @@ document.addEventListener("click", (e) => {
     v.play().catch(() => {});
   }
   setMuteIcon(btn, !unmute);
-  // จำว่าผู้ใช้เปิดเสียงในแผงแผนที่ไว้ เพื่อให้คลิปสถานที่ถัดไปมีเสียงต่อ
-  $(".now-photo").dataset.sound = unmute && btn.closest(".now-photo") ? "1" : "";
+  btn.classList.remove("need-tap");
+  // จำค่าเสียงของแผงแผนที่ (ค่าเริ่มต้น = เปิดเสียง) ให้คลิปสถานที่ถัดไปใช้ค่าเดียวกัน
+  if (btn.closest(".now-photo")) $(".now-photo").dataset.sound = unmute ? "1" : "0";
 }, true);
+
+// แผงแผนที่เล่นพร้อมเสียงอัตโนมัติ ถ้าเบราว์เซอร์ยังไม่อนุญาต (ผู้ใช้ยังไม่เคยแตะหน้าเว็บ)
+// จะเล่นแบบปิดเสียงไปก่อน แล้วเปิดเสียงทันทีที่ผู้ใช้แตะตรงไหนก็ได้
+function playerSoundOn() { return document.querySelector(".now-photo").dataset.sound !== "0"; }
+function playPlayerVideo(v) {
+  const btn = document.querySelector(".now-photo .mute-btn");
+  v.muted = !playerSoundOn();
+  v.play().then(() => {
+    if (!btn.classList.contains("need-tap")) setMuteIcon(btn, v.muted);
+  }).catch((err) => {
+    if (err.name !== "NotAllowedError" || v.muted) return;
+    v.muted = true;
+    v.play().catch(() => {});
+    btn.classList.add("need-tap");
+    btn.textContent = "🔇 แตะเพื่อเปิดเสียง";
+  });
+}
+["click", "touchend", "keydown"].forEach((type) => document.addEventListener(type, (e) => {
+  const btn = document.querySelector(".now-photo .mute-btn");
+  if (!btn || !btn.classList.contains("need-tap") || e.target.closest?.(".mute-btn")) return;
+  const v = document.querySelector("#now-video");
+  btn.classList.remove("need-tap");
+  if (!playerSoundOn()) { setMuteIcon(btn, true); return; }
+  v.muted = false;
+  setMuteIcon(btn, false);
+}, true));
 
 const $ = (s, r = document) => r.querySelector(s);
 const pad = (n) => String(n).padStart(2, "0");
@@ -483,7 +510,7 @@ class TripPlayer {
     this.waitSince = null;
     if (this.pendingSeek != null) { v.currentTime = this.pendingSeek * v.duration; this.pendingSeek = null; }
     v.playbackRate = this.speeds[this.speedIdx];
-    if (v.paused && !v.ended && v.dataset.visible) v.play().catch(() => {});
+    if (v.paused && !v.ended && v.dataset.visible) playPlayerVideo(v);
     const u = v.ended ? 1 : Math.min(.999, v.currentTime / v.duration);
     this.render(v.ended ? sc.end : sc.start + sc.ms * u);
   }
@@ -579,10 +606,10 @@ class TripPlayer {
         video.poster = p.image;
         video.dataset.src = p.video;
         video.src = p.video;
-        const sound = box.dataset.sound === "1";
-        video.muted = !sound; setMuteIcon(muteBtn, !sound);
+        video.muted = true;
+        if (!muteBtn.classList.contains("need-tap")) setMuteIcon(muteBtn, !playerSoundOn());
         video.hidden = false; photo.hidden = true; muteBtn.hidden = false;
-        if (video.dataset.visible && !video.dataset.hold) video.play().catch(() => {});
+        if (video.dataset.visible && !video.dataset.hold) playPlayerVideo(video);
       } else {
         video.pause(); delete video.dataset.src; video.removeAttribute("src"); video.load();
         video.hidden = true; photo.hidden = false; muteBtn.hidden = true;
