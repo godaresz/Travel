@@ -26,7 +26,9 @@ const PLACES = {
     art: "linear-gradient(135deg,#12c2b4,#1584c4)",
   },
   beach: {
-    image: "images/beach.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/beach.jpg"
+    image: "images/beach.jpg",
+    video: "images/beach.mp4", // ตัดจากคลิป TikTok @chonburilove
+    credit: { label: "@chonburilove", url: "https://www.tiktok.com/@chonburilove/video/7534230236008008978" },
     name: "หาดบางแสน (โซนหน้า รร.S2)",
     desc: "รับข้าวกล่อง พักผ่อน เล่นน้ำ ตามอัธยาศัย",
     icon: "🏖️",
@@ -219,6 +221,7 @@ function renderPlaces(onPick) {
         ${mediaHTML(p)}
         <span class="emoji">${p.icon}</span>
         ${p.video ? '<span class="badge">🎬 วิดีโอจริง</span>' : ""}
+        ${p.credit ? `<a class="credit" href="${p.credit.url}" target="_blank" rel="noopener">🎵 ${p.credit.label}</a>` : ""}
       </div>
       <div class="place-body">
         <h3>${p.name}</h3>

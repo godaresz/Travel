@@ -355,6 +355,11 @@ a { color: inherit; }
 .place-body a { font-weight: 600; color: var(--ocean-500); text-decoration: none; }
 .place-body a:hover { text-decoration: underline; }
 
+.place-art .credit {
+  position: absolute; right: 12px; bottom: 34px; z-index: 2; padding: 3px 9px; border-radius: 999px;
+  font-size: .72rem; color: #fff; text-decoration: none; background: rgba(0,0,0,.45);
+}
+
 /* ===== CHECKLIST ===== */
 .checklist { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .checklist span {
