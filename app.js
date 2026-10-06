@@ -258,6 +258,66 @@ function initReveal() {
 /* =========================================================
  * PLACES
  * ========================================================= */
+// ---------- รายชื่อผู้ร่วมทริป ----------
+const MEMBERS = [
+  ["L200011", "น.ส.ชลิตา บุญเรือง", "Asst.Manager"],
+  ["L260094", "นายชานนท์ ฝั้งพรม", "Section chief"],
+  ["L990141", "น.ส.ธนัทพร พิศเพ็ง", "A.Section chief"],
+  ["L150081", "นายสุวโรช ธนบัตร", "Foreman"],
+  ["L170081", "น.ส.อาภาพร พรมเสนา", "Worker"],
+  ["L210179", "น.ส.เพ็ญพร สิทธิ์เสนา", "Worker"],
+  ["L180135", "น.ส.สมถวิล ดัชถุยาวัตร", "Worker"],
+  ["L220243", "นายธเนตร น้อยละมัย", "Worker"],
+  ["S260010", "น.ส.นสุพัตรา เจริญพร้อม", "Worker"],
+  ["J260006", "นายกฤษดา แสนภักดี", "Worker"],
+  ["B260051", "น.ส.ปรมาภรณ์ ทัพผดุง", "Worker"],
+  ["T260202", "น.ส.กัลยกานต์ แสงล้ำ", "Worker"],
+  ["J260064", "นายพีรพัฒน์ แสนจันทร์", "Worker"],
+  ["J260028", "น.ส.รักษ์สุดา ยอมจันทึก", "Worker"],
+  ["J260063", "นายชิษณุพงษ์ คนไว", "Worker"],
+  ["T260203", "น.ส.วัชราภรณ์ แสงล้ำ", "Worker"],
+  ["B260067", "น.ส.วรรณภา แสนบุญ", "Worker"],
+  ["T260228", "น.ส.ธัญพิชชา โครตพันธ์", "Worker"],
+  ["J260003", "น.ส.ธัญญารัตน์ เศษแสงศรี", "Worker"],
+  ["L260049", "น.ส.ยุพา อ่อนศรี", "Worker"],
+];
+
+function renderMembers() {
+  const list = $("#members-list");
+  if (!list) return;
+  const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter("th", { granularity: "grapheme" }) : null;
+  const initial = (name) => {
+    const first = name.replace(/^(น\.ส\.|นาย|นาง)\s*/, "");
+    return seg ? [...seg.segment(first)][0].segment : first[0];
+  };
+  const hues = [186, 12, 340, 200, 38, 160, 265, 220];
+  $("#member-count").textContent = MEMBERS.length;
+  list.innerHTML = MEMBERS.map(([code, name, role], i) => {
+    const lead = role !== "Worker";
+    return `
+    <li class="member reveal${lead ? " lead" : ""}" style="--i:${i % 8};--h:${hues[i % hues.length]}" data-q="${(code + " " + name).toLowerCase()}">
+      <span class="m-no">${i + 1}</span>
+      <span class="m-avatar" aria-hidden="true">${initial(name)}</span>
+      <span class="m-info">
+        <b class="m-name">${name}</b>
+        <span class="m-meta"><span class="m-role">${lead ? "⭐ " : ""}${role}</span><span class="m-code">${code}</span></span>
+      </span>
+    </li>`;
+  }).join("");
+  const search = $("#member-search");
+  const empty = $("#member-empty");
+  search.addEventListener("input", () => {
+    const q = search.value.trim().toLowerCase();
+    let shown = 0;
+    list.querySelectorAll(".member").forEach((li) => {
+      const hit = !q || li.dataset.q.includes(q);
+      li.hidden = !hit;
+      if (hit) shown++;
+    });
+    empty.hidden = shown > 0;
+  });
+}
+
 function renderPlaces(onPick) {
   $("#places-list").innerHTML = Object.entries(PLACES).map(([key, p]) => `
     <article class="place reveal${p.video ? " has-video" : ""}">
@@ -684,6 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (player) player.jumpTo(i, autoplay);
   };
   renderPlaces(pick);
+  renderMembers();
   observeVideos();
   initReveal();
 });

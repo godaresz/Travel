@@ -329,6 +329,45 @@ a { color: inherit; }
   font-size: .72rem; color: #fff; text-decoration: none; background: rgba(0,0,0,.45);
 }
 
+/* ===== MEMBERS ===== */
+.member-tools { display: flex; justify-content: center; margin-bottom: 22px; }
+#member-search {
+  width: min(420px, 100%); padding: 12px 20px; border-radius: 999px; border: 2px solid #d6eff6;
+  font: inherit; font-size: 1rem; background: var(--card); color: var(--ink); box-shadow: var(--shadow); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+#member-search:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(18,194,180,.18), var(--shadow); }
+.members {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;
+}
+.member {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 12px 30px 12px 12px; border-radius: 18px; background: var(--card); box-shadow: 0 10px 26px -18px rgba(4,33,59,.45);
+  transition: transform .5s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 45ms), opacity .6s ease calc(var(--i) * 45ms), box-shadow .3s;
+}
+.member[hidden] { display: none; }
+.member.reveal { transform: translateY(24px) scale(.96); }
+.member.reveal.in { transform: none; }
+.member.reveal.in:hover { transform: translateY(-4px); box-shadow: 0 18px 34px -18px rgba(4,33,59,.55); transition-delay: 0ms; }
+.member.lead { background: linear-gradient(135deg, #fff, #fff6e6); outline: 2px solid rgba(255,201,77,.6); }
+.m-no { position: absolute; top: 8px; right: 12px; font-size: .75rem; color: var(--muted); font-weight: 600; }
+.m-avatar {
+  flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+  font: 800 1.35rem "Kanit", sans-serif; color: #fff;
+  background: linear-gradient(135deg, hsl(var(--h) 75% 58%), hsl(calc(var(--h) + 35) 80% 50%));
+  box-shadow: 0 6px 14px -6px hsl(var(--h) 70% 40% / .7);
+}
+.member.reveal.in .m-avatar { animation: avatarPop .6s cubic-bezier(.3,1.6,.5,1) calc(var(--i) * 45ms + .15s) both; }
+@keyframes avatarPop { from { transform: scale(.3) rotate(-20deg); } to { transform: none; } }
+.m-info { min-width: 0; display: grid; gap: 3px; }
+.m-name { font-family: "Kanit", sans-serif; font-weight: 600; font-size: 1.02rem; color: var(--ocean-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .8rem; }
+.m-role { padding: 2px 10px; border-radius: 999px; background: #e2f7f5; color: #0b7d74; font-weight: 600; }
+.member.lead .m-role { background: #ffeccc; color: #a15c00; }
+.m-code { color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .03em; }
+.member-empty { text-align: center; color: var(--muted); margin-top: 16px; }
+
 /* ===== CHECKLIST ===== */
 .checklist { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .checklist span {

@@ -40,6 +40,7 @@
       <div class="nav-links">
         <a href="#map">แผนที่</a>
         <a href="#places">สถานที่</a>
+        <a href="#members">รายชื่อ</a>
       </div>
     </nav>
 
@@ -80,7 +81,7 @@
       <div class="stat reveal"><b data-count="9">0</b><span>กิจกรรม</span></div>
       <div class="stat reveal"><b data-count="13">0</b><span>ชั่วโมงแห่งความสุข</span></div>
       <div class="stat reveal"><b data-count="4">0</b><span>สถานที่</span></div>
-      <div class="stat reveal"><b data-count="1">0</b><span>ทีมเดียวกัน</span></div>
+      <div class="stat reveal"><b data-count="20">0</b><span>ผู้ร่วมทริป</span></div>
     </section>
 
     <!-- ===== MAP ===== -->
@@ -142,6 +143,19 @@
         <span>🩱 ชุดเล่นน้ำ</span><span>🧻 ผ้าเช็ดตัว</span><span>🔋 พาวเวอร์แบงก์</span>
         <span>💵 เงินสดค่าบัตร</span><span>💊 ยาประจำตัว</span><span>🩴 รองเท้าแตะ</span>
       </div>
+    </section>
+
+    <!-- ===== MEMBERS ===== -->
+    <section class="section" id="members">
+      <div class="section-head reveal">
+        <h2>รายชื่อผู้ร่วมทริป</h2>
+        <p>ทั้งหมด <b id="member-count">20</b> คน · แล้วเจอกันที่บางแสน 👋</p>
+      </div>
+      <div class="member-tools reveal">
+        <input type="search" id="member-search" placeholder="🔍 ค้นหาชื่อ หรือรหัส" aria-label="ค้นหาชื่อหรือรหัส" autocomplete="off" />
+      </div>
+      <ol class="members" id="members-list"></ol>
+      <p class="member-empty" id="member-empty" hidden>ไม่พบรายชื่อที่ค้นหา</p>
     </section>
   </main>
 
