@@ -41,3 +41,8 @@ python3 -m http.server 8000   # แล้วเปิด http://localhost:8000
 3. (ทางเลือก) Deploy อัตโนมัติเมื่อ push เข้า `main`: สร้าง Service Account key ใน Firebase Console
    (Project settings → Service accounts → Generate new private key) แล้วเพิ่มเป็น GitHub secret ชื่อ
    `FIREBASE_SERVICE_ACCOUNT` (วางเนื้อหา JSON ทั้งไฟล์) ใน Settings → Secrets and variables → Actions
+
+## ภาพสถานที่
+
+ภาพประกอบ (SVG แอนิเมชัน) อยู่ในโฟลเดอร์ `images/` ถ้าต้องการใช้รูปถ่ายจริง ให้วางไฟล์ เช่น `images/aquarium.jpg`
+แล้วแก้ช่อง `image` ของสถานที่นั้นใน `PLACES` (`app.js`) ให้ชี้ไปที่ไฟล์ใหม่

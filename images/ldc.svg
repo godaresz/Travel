@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb37a"/><stop offset=".55" stop-color="#ffd9a8"/><stop offset="1" stop-color="#fff1dc"/></linearGradient>
+    <linearGradient id="bld" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6f61"/><stop offset="1" stop-color="#e2475a"/></linearGradient>
+    <linearGradient id="van" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe8f0"/></linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#sky)"/>
+  <circle cx="640" cy="120" r="56" fill="#fff3c4"><animate attributeName="r" values="54;60;54" dur="4s" repeatCount="indefinite"/></circle>
+  <g fill="#ffffff" opacity=".8">
+    <g><ellipse cx="160" cy="90" rx="60" ry="18"/><ellipse cx="190" cy="78" rx="34" ry="20"/>
+      <animateTransform attributeName="transform" type="translate" values="0 0;40 0;0 0" dur="16s" repeatCount="indefinite"/></g>
+  </g>
+  <!-- warehouse / office -->
+  <rect x="110" y="170" width="420" height="190" rx="10" fill="url(#bld)"/>
+  <rect x="110" y="150" width="420" height="34" rx="8" fill="#c73650"/>
+  <text x="320" y="174" font-family="Kanit,Arial,sans-serif" font-size="24" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="4">LINEX · LDC-SR</text>
+  <g fill="#ffe7d6">
+    <rect x="140" y="210" width="70" height="44" rx="6"/><rect x="230" y="210" width="70" height="44" rx="6"/>
+    <rect x="340" y="210" width="70" height="44" rx="6"/><rect x="430" y="210" width="70" height="44" rx="6"/>
+  </g>
+  <g fill="#8e2a3f"><rect x="150" y="280" width="90" height="80"/><rect x="260" y="280" width="90" height="80"/><rect x="400" y="290" width="100" height="70"/></g>
+  <g stroke="#b13a4f" stroke-width="3"><line x1="150" y1="300" x2="240" y2="300"/><line x1="150" y1="320" x2="240" y2="320"/><line x1="150" y1="340" x2="240" y2="340"/><line x1="260" y1="300" x2="350" y2="300"/><line x1="260" y1="320" x2="350" y2="320"/><line x1="260" y1="340" x2="350" y2="340"/></g>
+  <!-- ground -->
+  <rect y="358" width="800" height="92" fill="#5d6b7a"/>
+  <g stroke="#fff" stroke-width="6" stroke-dasharray="40 30"><line x1="0" y1="405" x2="800" y2="405"><animate attributeName="stroke-dashoffset" values="0;-70" dur="1.2s" repeatCount="indefinite"/></line></g>
+  <!-- van -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur=".6s" repeatCount="indefinite"/>
+    <path d="M560 300 h150 q30 0 40 30 l10 40 v20 h-210 z" fill="url(#van)" stroke="#9fb1c2" stroke-width="3"/>
+    <path d="M690 310 h18 q20 0 28 24 l4 14 h-50 z" fill="#7fd3e8"/>
+    <g fill="#7fd3e8"><rect x="575" y="312" width="40" height="30" rx="5"/><rect x="625" y="312" width="50" height="30" rx="5"/></g>
+    <rect x="560" y="360" width="200" height="8" fill="#ff6f61"/>
+    <g fill="#2b3440"><circle cx="600" cy="392" r="20"/><circle cx="720" cy="392" r="20"/></g>
+    <g fill="#c9d3dd"><circle cx="600" cy="392" r="8"/><circle cx="720" cy="392" r="8"/></g>
+  </g>
+  <!-- people -->
+  <g fill="#0a4a7a"><circle cx="455" cy="310" r="9"/><rect x="447" y="320" width="16" height="36" rx="6"/></g>
+  <g fill="#12c2b4"><circle cx="485" cy="314" r="8"/><rect x="478" y="323" width="14" height="33" rx="6"/></g>
+</svg>

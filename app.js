@@ -6,6 +6,7 @@
 // ---------- สถานที่ (พิกัดโดยประมาณ แก้ไขได้ตามจริง) ----------
 const PLACES = {
   ldc: {
+    image: "images/ldc.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/ldc.jpg"
     name: "LINEX (LDC-SR)",
     desc: "จุดนัดพบ เช็คชื่อ ขึ้นรถตู้ และจุดส่งกลับ",
     url: "https://maps.app.goo.gl/37bQbR1dCGTD195VA",
@@ -15,6 +16,7 @@ const PLACES = {
     art: "linear-gradient(135deg,#ff9f6e,#ff4f7b)",
   },
   aquarium: {
+    image: "images/aquarium.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/aquarium.jpg"
     name: "อควอเลี่ยม บางแสน",
     desc: "สถานแสดงพันธุ์สัตว์น้ำบางแสน สถาบันวิทยาศาสตร์ทางทะเล ม.บูรพา",
     icon: "🐠",
@@ -23,6 +25,7 @@ const PLACES = {
     art: "linear-gradient(135deg,#12c2b4,#1584c4)",
   },
   beach: {
+    image: "images/beach.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/beach.jpg"
     name: "หาดบางแสน (โซนหน้า รร.S2)",
     desc: "รับข้าวกล่อง พักผ่อน เล่นน้ำ ตามอัธยาศัย",
     icon: "🏖️",
@@ -31,6 +34,7 @@ const PLACES = {
     art: "linear-gradient(135deg,#ffd27a,#ff9f6e)",
   },
   roseta: {
+    image: "images/roseta.svg", // ภาพประกอบ — เปลี่ยนเป็นรูปถ่ายจริงได้ เช่น "images/roseta.jpg"
     name: "Roseta บางแสน",
     desc: "ร้านอาหารริมทะเล ทานมื้อเย็นร่วมกัน",
     icon: "🍽️",
@@ -79,6 +83,10 @@ const SCHEDULE = [
   { time: "19:00น.-21:00น.", dur: "2ชั่วโมง", title: "เดินทางกลับLDC-SR", place: "หาดบางแสน → LDC-SR", icon: "🏠",
     type: "move", route: "home", mover: "🚐", t0: 1140, t1: 1260 },
 ];
+
+// สถานที่ที่ใช้แสดงภาพของแต่ละกิจกรรม
+["ldc", "ldc", "aquarium", "aquarium", "beach", "beach", "roseta", "roseta", "ldc"].forEach((k, i) => (SCHEDULE[i].pl = k));
+const imgOf = (key) => PLACES[key].image;
 
 // ระยะเวลาแอนิเมชันของแต่ละประเภท (ms)
 const ANIM_MS = { stay: 2600, shortStay: 1400, drive: 8000, walk: 3800 };
@@ -181,6 +189,7 @@ function renderTimeline(onPick) {
     <li class="tl-item reveal" data-i="${i}" style="transition-delay:${(i % 3) * 60}ms">
       <div class="tl-dot">${s.icon}</div>
       <div class="tl-card" tabindex="0" role="button" aria-label="ดู ${s.title} บนแผนที่">
+        <div class="tl-photo"><img src="${imgOf(s.pl)}" alt="${PLACES[s.pl].name}" loading="lazy" /></div>
         <div class="tl-time">
           <b>${s.time}</b>
           ${s.dur ? `<span class="chip">⏱ ${s.dur}</span>` : ""}
@@ -201,7 +210,10 @@ function renderTimeline(onPick) {
 function renderPlaces(onPick) {
   $("#places-list").innerHTML = Object.entries(PLACES).map(([key, p]) => `
     <article class="place reveal">
-      <div class="place-art" style="background:${p.art}"><span class="emoji">${p.icon}</span></div>
+      <div class="place-art" style="background:${p.art}">
+        <img src="${p.image}" alt="${p.name}" loading="lazy" />
+        <span class="emoji">${p.icon}</span>
+      </div>
       <div class="place-body">
         <h3>${p.name}</h3>
         <p>${p.desc}</p>
@@ -239,7 +251,8 @@ class TripPlayer {
       });
       this.markers[key] = L.marker(p.latlng, { icon, riseOnHover: true })
         .addTo(this.map)
-        .bindTooltip(p.name, { permanent: true, direction: "top", offset: [0, -46], className: `place-label lbl-${key}` });
+        .bindTooltip(p.name, { permanent: true, direction: "top", offset: [0, -46], className: `place-label lbl-${key}` })
+        .bindPopup(`<div class="pop"><img src="${p.image}" alt="${p.name}" /><b>${p.name}</b><span>${p.desc}</span></div>`, { maxWidth: 260, minWidth: 240 });
     });
     const syncZoom = () => this.map.getContainer().classList.toggle("far", this.map.getZoom() < 13);
     this.map.on("zoomend", syncZoom);
@@ -442,6 +455,12 @@ class TripPlayer {
     const card = $("#now-card");
     card.classList.remove("swap"); void card.offsetWidth; card.classList.add("swap");
     $("#now-icon").textContent = sc.icon;
+    const photo = $("#now-photo");
+    const src = imgOf(sc.pl);
+    if (!photo.src.endsWith(src)) {
+      photo.classList.add("fade");
+      setTimeout(() => { photo.src = src; photo.alt = PLACES[sc.pl].name; photo.classList.remove("fade"); }, 250);
+    }
     $("#now-time").textContent = `${sc.time}${sc.dur ? " · " + sc.dur : ""}`;
     $("#now-title").textContent = sc.title;
     $("#now-place").textContent = `📍 ${sc.place}`;
